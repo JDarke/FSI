@@ -28,6 +28,28 @@
   color: #61dafb;
 }
 
+.newPost__container {
+  display: flex;
+  width: 100%;
+}
+
+.newPost__container button {
+  width: 10%;
+}
+
+.newPost__content {
+  margin: 0 1em;
+  width: 60%;
+}
+
+.newPost__title {
+  width: 30%;
+}
+
+.react-bootstrap-table table {
+  table-layout: auto !important;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

@@ -15,64 +15,96 @@ import {
   CreatePostMutationVariables,
 } from "@blueheart/fsi-api-spec/lib/generated/graphql";
 import * as React from "react";
+import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
 
 export const Posts = () => {
+  const [update, setUpdate] = useState(false);
+  const handleUpdate = () => {
+    setUpdate(!update);
+  };
+
+  useEffect(() => {
+    //console.log(update); 
+  }, [update]);
+
   return (
     <Container>
       <h1>Posts</h1>
-      <NewPosts />
-      <PostsTable />
+      <NewPosts handleUpdate={handleUpdate} />
+      <PostsTable update={update} />
     </Container>
   );
 };
 
-export const NewPosts = () => {
+interface Props {
+  handleUpdate(): void;
+}
+
+export const NewPosts = (props: Props) => {
+  const { handleUpdate } = props;
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-
-  useEffect(() => {
-    console.log(title, content);
-  }, [title, content]);
-
   const [newPost, { data }] = useMutation(MUTATION_SUBMIT_POST);
-  
-  //console.log(newPost);
-
   const handleSubmit = () => {
     console.log(newPost);
     try {
-      newPost({ variables: { post: { title: title, content: content } } });
+      if (title !== "" && content !== "") {
+        newPost({ variables: { post: { title: title, content: content } } });
+      }
+      handleUpdate();
     } catch (e) {
-      console.log('error');
+      console.log("error");
     }
   };
 
   return (
-    <form>
+    <div className="newPost__container">
       <input
+        className="newPost__title"
         name="title"
         type="text"
         value={title}
+        placeholder="Title"
         onChange={(e) => setTitle(e.target.value)}
       ></input>
       <input
+        className="newPost__content"
         name="content"
         type="text"
         value={content}
+        placeholder="Content"
         onChange={(e) => setContent(e.target.value)}
       ></input>
 
       <Button onClick={handleSubmit}>Add</Button>
-    </form>
+    </div>
   );
 };
 
-export const PostsTable = () => {
+interface PropsPT {
+  update: boolean;
+}
+
+export const PostsTable = (props: PropsPT) => {
+  const { update } = props;
+  const [page, setPage] = useState(1);
+  const [postsPerPage, setPostsPerPage] = useState(5);
+  const pageBack = () => {
+    setPage(page - 1);
+  };
+  const pageForward = () => {
+    setPage(page + 1);
+  };
+
+  useEffect(() => {
+    console.log(page);
+  }, [page]);
+
   const { data, loading, error } = useQuery<
     GetPostsQuery,
     GetPostsQueryVariables
   >(QUERY_GET_POSTS);
-  console.log(data);
+  console.log("data " + data);
   if (loading) {
     return <Spinner animation={"border"} />;
   }
@@ -81,8 +113,26 @@ export const PostsTable = () => {
     return <div>{error ? error.toString() : "Error: no data"}</div>;
   }
 
+  const entries = data.getPosts.map((post) => (
+    <tr key={post.id}>
+      <td>{post.id}</td>
+      <td>{post.title}</td>
+      <td>{post.content}</td>
+    </tr>
+  ));
+
   return (
     <div>
+      <div className="paginate__controls">
+        <Button onClick={pageBack}>Back</Button>
+        <Button onClick={pageForward}>Forward</Button>
+        <input
+          name="postsPerPage"
+          type="text"
+          value={postsPerPage}
+          onChange={(e) => setPostsPerPage(parseInt(e.target.value))}
+        />
+      </div>
       <Table>
         <thead>
           <tr>
@@ -91,15 +141,7 @@ export const PostsTable = () => {
             <th>Content</th>
           </tr>
         </thead>
-        <tbody>
-          {data.getPosts.map((post) => (
-            <tr key={post.id}>
-              <td>{post.id}</td>
-              <td>{post.title}</td>
-              <td>{post.content}</td>
-            </tr>
-          ))}
-        </tbody>
+        <tbody>{entries}</tbody>
       </Table>
     </div>
   );
