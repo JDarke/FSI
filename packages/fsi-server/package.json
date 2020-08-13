@@ -13,12 +13,14 @@
     "lowdb": "^1.0.0",
     "nodemon": "^2.0.2",
     "shortid": "^2.2.15",
-    "ts-node": "^8.4.1",
     "typescript": "3.9.5",
     "uuid": "^7.0.2"
   },
   "scripts": {
     "postinstall": "cd ../.. && yarn postinstall",
-    "start": "nodemon -e js,ts,jsx,tsx,json,graphql --watch 'src/**/*.ts' --watch '../api-spec/**/*' --exec 'ts-node' src/index.ts"
+    "start": "nodemon -e js,ts,jsx,tsx,json,graphql --watch 'src/**/*.ts' --watch '../api-spec/**/*' --exec ts-node src/index.ts"
+  },
+  "devDependencies": {
+    "ts-node": "^8.10.2"
   }
 }

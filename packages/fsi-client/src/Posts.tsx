@@ -1,5 +1,9 @@
-import { useQuery } from "@apollo/react-hooks";
-import { QUERY_GET_POSTS } from "@blueheart/fsi-api-spec/lib/queries";
+import { useQuery, useMutation } from "@apollo/react-hooks";
+import { useState, useEffect } from "react";
+import {
+  QUERY_GET_POSTS,
+  MUTATION_SUBMIT_POST,
+} from "@blueheart/fsi-api-spec/lib/queries";
 import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
@@ -7,6 +11,8 @@ import Spinner from "react-bootstrap/Spinner";
 import {
   GetPostsQuery,
   GetPostsQueryVariables,
+  CreatePostMutation,
+  CreatePostMutationVariables,
 } from "@blueheart/fsi-api-spec/lib/generated/graphql";
 import * as React from "react";
 
@@ -21,14 +27,43 @@ export const Posts = () => {
 };
 
 export const NewPosts = () => {
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+
+  useEffect(() => {
+    console.log(title, content);
+  }, [title, content]);
+
+  const [newPost, { data }] = useMutation(MUTATION_SUBMIT_POST);
+  
+  //console.log(newPost);
+
+  const handleSubmit = () => {
+    console.log(newPost);
+    try {
+      newPost({ variables: { post: { title: title, content: content } } });
+    } catch (e) {
+      console.log('error');
+    }
+  };
+
   return (
-    <Button
-      onClick={() => {
-        console.log("Wire this up!");
-      }}
-    >
-      Add
-    </Button>
+    <form>
+      <input
+        name="title"
+        type="text"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      ></input>
+      <input
+        name="content"
+        type="text"
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+      ></input>
+
+      <Button onClick={handleSubmit}>Add</Button>
+    </form>
   );
 };
 
@@ -37,7 +72,7 @@ export const PostsTable = () => {
     GetPostsQuery,
     GetPostsQueryVariables
   >(QUERY_GET_POSTS);
-
+  console.log(data);
   if (loading) {
     return <Spinner animation={"border"} />;
   }

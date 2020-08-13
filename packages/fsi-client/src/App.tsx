@@ -4,7 +4,6 @@ import ApolloClient from "apollo-boost";
 
 import "./App.css";
 import { Posts } from "./Posts";
-
 export class App extends React.Component {
   private readonly apolloClient: ApolloClient<unknown>;
 
