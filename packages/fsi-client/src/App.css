@@ -46,8 +46,39 @@
   width: 30%;
 }
 
-.react-bootstrap-table table {
-  table-layout: auto !important;
+
+.paginate__controls {
+  margin-top: 1em;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+}
+.paginate__controls input {
+  width: 2em;
+  text-align: center;
+}
+.paginate__controls > * {
+  margin-right: .5em;
+}
+
+.col__id {
+  width: 15%;
+}
+
+.col__title{
+  width: 25%;
+}
+
+.col__content {
+  width: 60%;
+}
+
+.current__page {
+  display: flex;
+  text-align: center;
+  align-items: center;
+  height: 100%;
 }
 
 @keyframes App-logo-spin {

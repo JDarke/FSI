@@ -11,47 +11,32 @@ import Spinner from "react-bootstrap/Spinner";
 import {
   GetPostsQuery,
   GetPostsQueryVariables,
-  CreatePostMutation,
-  CreatePostMutationVariables,
 } from "@blueheart/fsi-api-spec/lib/generated/graphql";
 import * as React from "react";
-import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
+
 
 export const Posts = () => {
-  const [update, setUpdate] = useState(false);
-  const handleUpdate = () => {
-    setUpdate(!update);
-  };
-
-  useEffect(() => {
-    //console.log(update); 
-  }, [update]);
-
   return (
     <Container>
       <h1>Posts</h1>
-      <NewPosts handleUpdate={handleUpdate} />
-      <PostsTable update={update} />
+      <NewPosts />
+      <PostsTable />
     </Container>
   );
 };
 
-interface Props {
-  handleUpdate(): void;
-}
 
-export const NewPosts = (props: Props) => {
-  const { handleUpdate } = props;
+export const NewPosts = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [newPost, { data }] = useMutation(MUTATION_SUBMIT_POST);
   const handleSubmit = () => {
-    console.log(newPost);
     try {
       if (title !== "" && content !== "") {
         newPost({ variables: { post: { title: title, content: content } } });
+        setTitle('');
+        setContent('');
       }
-      handleUpdate();
     } catch (e) {
       console.log("error");
     }
@@ -75,36 +60,33 @@ export const NewPosts = (props: Props) => {
         placeholder="Content"
         onChange={(e) => setContent(e.target.value)}
       ></input>
-
       <Button onClick={handleSubmit}>Add</Button>
     </div>
   );
 };
 
-interface PropsPT {
-  update: boolean;
-}
 
-export const PostsTable = (props: PropsPT) => {
-  const { update } = props;
-  const [page, setPage] = useState(1);
+export const PostsTable = () => {
+  const [page, setPage] = useState(0);
   const [postsPerPage, setPostsPerPage] = useState(5);
   const pageBack = () => {
-    setPage(page - 1);
+    setPage(page > 0 ? page - 1 : page);
   };
   const pageForward = () => {
-    setPage(page + 1);
+    setPage(page < entries.length / postsPerPage - 1 ? page + 1 : page);
   };
 
   useEffect(() => {
-    console.log(page);
-  }, [page]);
+    setPage(0);
+  }, [postsPerPage]);
 
   const { data, loading, error } = useQuery<
     GetPostsQuery,
     GetPostsQueryVariables
-  >(QUERY_GET_POSTS);
-  console.log("data " + data);
+    >(QUERY_GET_POSTS, {
+      pollInterval: 500,
+    });
+
   if (loading) {
     return <Spinner animation={"border"} />;
   }
@@ -115,23 +97,30 @@ export const PostsTable = (props: PropsPT) => {
 
   const entries = data.getPosts.map((post) => (
     <tr key={post.id}>
-      <td>{post.id}</td>
-      <td>{post.title}</td>
-      <td>{post.content}</td>
+      <td className="col__id">{post.id}</td>
+      <td className="col__title">{post.title}</td>
+      <td className="col__content">{post.content}</td>
     </tr>
   ));
+
+  const currentEntries = entries.slice(
+    page * postsPerPage,
+    page * postsPerPage + postsPerPage
+  );
 
   return (
     <div>
       <div className="paginate__controls">
-        <Button onClick={pageBack}>Back</Button>
-        <Button onClick={pageForward}>Forward</Button>
+        <Button onClick={pageBack}>{`<`}</Button>
+        <div className="current__page">{`Page ${page + 1}`}</div>
+        <Button onClick={pageForward}>{`>`}</Button>
         <input
           name="postsPerPage"
           type="text"
           value={postsPerPage}
           onChange={(e) => setPostsPerPage(parseInt(e.target.value))}
         />
+        <div className="input__perPage">posts per page</div>
       </div>
       <Table>
         <thead>
@@ -141,7 +130,7 @@ export const PostsTable = (props: PropsPT) => {
             <th>Content</th>
           </tr>
         </thead>
-        <tbody>{entries}</tbody>
+        <tbody>{currentEntries}</tbody>
       </Table>
     </div>
   );
